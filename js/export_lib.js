@@ -21,7 +21,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 	//option for each node (Can bechange with wfe tag)
 	var ignore_item = false;
 	var ignore_outline = false;
-	var escaping = false; // EP quick fix for LaTeX problems
+	var escaping = true;
 	var page_break = false;
 	var latexSyntax = options.latexSyntax;
 	var mdSyntax = options.mdSyntax;
@@ -266,15 +266,14 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 		[/^### /,"#eyo-style:Heading3 "],
 		[/^#### /,"#eyo-style:Heading4 "],
 		[/^##### /,"#eyo-style:Heading5 "],
-		[/^###### /,"#eyo-style:Heading6 "],
-		[/#red /, "#eyo-font-color:Red "]
+		[/^###### /,"#eyo-style:Heading6 "]
 	];
 
 	var ESCAPE_CHARACTER = {
-			text: [["",""]], // TODO : empty list 
-			markdown: [["\\","\\\\"]], // TODO : quick fix EP [,["`","\\`"],["*","\\*"],["_","\\_"],["{","\\{"],["}","\\}"],["[","\\["],["]","\\]"],["(","\\("],[")","\\)"],["#","\\#"],["+","\\+"],["-","\\-"],[".","\\."],["!","\\!"]],
+			text: [["",""]],
+			markdown: [["\\","\\\\"],["`","\\`"],["*","\\*"],["_","\\_"],["{","\\{"],["}","\\}"],["[","\\["],["]","\\]"],["(","\\("],[")","\\)"],["#","\\#"],["+","\\+"],["-","\\-"],[".","\\."],["!","\\!"]],
 			html: [["&","&amp;"],[">","&gt;"],["<","&lt;"],["\"","&quot;"],["\'","&#39;"]],
-			latex: [["\\","\\textbackslash "],["ˆ","\\textasciicircum "],["&","\\&"],["%","\\%"],["$","\\$"],["#","\\#"],["/[^$_]*(_)/g","\\_"],["{","\\{"],["}","\\}"]], // & % $ # _ { } ~ ^ \ epep
+			latex: [["\\","\\textbackslash "],["ˆ","\\textasciicircum "],["&","\\&"],["%","\\%"],["$","\\$"],["#","\\#"],["_","\\_"],["{","\\{"],["}","\\}"]],
 			beamer: [["\\","\\textbackslash "],["ˆ","\\textasciicircum "],["&","\\&"],["%","\\%"],["$","\\$"],["#","\\#"],["_","\\_"],["{","\\{"],["}","\\}"]],
 			opml: [["&","&amp;"],[">","&gt;"],["<","&lt;"],["\"","&quot;"],["\'","&#39;"]],
 			rtf: [["\\","\\\\"],["{","\\{"],["}","\\}"]]
@@ -331,8 +330,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 		}
 	}
 
-	var regexImage = /!\[([^\]]*)\]\(([^\)\s]*)(?: ([^\)\s]*))?\)/g; // old style
-  //var regexImage = /!\[([^\]]*)\]\(([^\)\s]*)\)\((?: ([^\)\s]*))?\)/g; // new style
+	var regexImage = /!\[([^\]]*)\]\(([^\)\s]*)(?: ([^\)\s]*))?\)/g;
 	function Image(text, link, link2){
 		this.link=link;
 		this.link2=link2;
@@ -344,7 +342,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 				case "html" : return "<img src=\""+this.link+"\"  title=\""+this.text+"\"><br /><span style=\"font-style: italic; font-size: 0.9em; color:gray;\">"+this.text+"</span>";
 				case "text" : return this.text + " : " +  this.link;
 				case "rtf" : return this.toString("text"); //TODO
-				case "latex" : return "\\begin{figure}[t]\\includegraphics[width=.75\\textwidth]{"+(this.text ? this.text : "")+"}\\centering \\end{figure}";
+				case "latex" : return "\\begin{figure}[t]\\includegraphics["+((this.text == "") ? "width=.75\\textwidth" : this.text)+"]{"+(this.link2 ? this.link2 : this.link)+"}\\centering \\end{figure}";
 				case "beamer" : return this.toString("latex");
 				case "markdown" : return "!["+this.text+"]("+this.link+")";
 				default : return "!["+this.text+"]("+this.link+(this.link2 ? " " + this.link2 : "")+")";
@@ -457,7 +455,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 		// Set default rules
 		ignore_item = false;
 		ignore_outline = false;
-		escaping = false; // EP quick fix for LaTeX problems
+		escaping= true;
 		page_break = false;
 		latexSyntax = options.latexSyntax;
 		mdSyntax = options.mdSyntax;
@@ -638,11 +636,11 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 				if(mdSyntax){
 
 					//change \a by \u0097		Used to for markdown escaping
-					/* textListApply(node.title, "".replace, [/\\(.)/ig, function(e,$1){
+					textListApply(node.title, "".replace, [/\\(.)/ig, function(e,$1){
 						var r = $1.charCodeAt(0).toString(16);
 						r = Array(5-r.length).join("0")+r;
 						return "\\u"+r;
-					}]); EP */
+					}]);
 
 					textListApply(node.note, "".replace, [/\\(.)/ig, function(e,$1){
 						var r = $1.charCodeAt(0).toString(16);
@@ -691,29 +689,23 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 				textListApply(node.note, "".replaceTag, [WF_TAG_REGEXP, " "]);
 			}
 
-			/* if(latexSyntax){
+			if(latexSyntax){
 				// change the LaTeX syntax
 				node.title=insertObj(node.title, regexCodeLatex, CodeLatex); //$x+y=z$
 				node.note=insertObj(node.note, regexCodeLatex, CodeLatex); //$x+y=z$
-			} EP */ 
+			}
 
 			if(mdSyntax){
-				// Interpret Markdown syntax in item and note
-				
-				//`code`
-				node.title=insertObj(node.title, regexCode, Code); 
-				node.note=insertObj(node.note, regexCode, Code); 
-				
-				//![](Image)
-				node.title=insertObj(node.title, regexImage, Image); 
-				node.note=insertObj(node.note, regexImage, Image); 
-				
-				//[google](google.fr)
-				node.title=insertObj(node.title, regexLink, Link); 
-				node.note=insertObj(node.note, regexLink, Link); 
-				
-				//node.title=insertObj(node.title, regexMdSyntax, mdSyntaxToList); //**Bold** _Italic_ ~strike~         // Quick fix EP
-				//node.note=insertObj(node.note, regexMdSyntax, mdSyntaxToList); //**Bold** _Italic_ ~strike~     // Quick fix EP
+				// change the MarkDown syntax
+				node.title=insertObj(node.title, regexCode, Code); //`code`
+				node.title=insertObj(node.title, regexImage, Image); //![](Image)
+				node.title=insertObj(node.title, regexLink, Link); //[google](google.fr)
+				node.title=insertObj(node.title, regexMdSyntax, mdSyntaxToList); //**Bold** _Italic_ ~strike~
+
+				node.note=insertObj(node.note, regexCode, Code); //`code`
+				node.note=insertObj(node.note, regexImage, Image); //![](Image)
+				node.note=insertObj(node.note, regexLink, Link); //[google](google.fr)
+				node.title=insertObj(node.title, regexMdSyntax, mdSyntaxToList); //**Bold** _Italic_ ~strike~
 
 
 				//change \u0097 by \a		Used to for markdown escaping
@@ -773,7 +765,6 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 			node.indent = Array(node.level+1).join(options.prefix_indent_chars);
 
 			//escape the character
-			debugger;
 			if(escaping){
 				ESCAPE_CHARACTER[options.format].forEach(function(e) {
 					textListApply(node.title, "".replaceAll, [e[0], e[1]]);
@@ -800,7 +791,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 		//reset node option before recurtion
 		ignore_item = false;
 		ignore_outline = false;
-		escaping = false; // EP quick fix for LaTeX problems
+		escaping = true;
 		page_break = false;
 		latexSyntax = options.latexSyntax;
 		mdSyntax = options.mdSyntax;
@@ -884,7 +875,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 					if(!youngerSibling || !(youngerSibling.styleName == "Enumeration"))
 						output_after_children += indent + "\\end{enumerate}\n";
 				}
-/* 				else if (node.styleName == "Heading1"){
+				else if (node.styleName == "Heading1"){
 					output_after_children +=  "\\end{section}\n";
 				}
 				else if (node.styleName == "Heading2"){
@@ -892,7 +883,7 @@ var exportLib = function(nodes, options, title, email, ALIAS) {
 				}
 				else if (node.styleName == "Heading3"){
 					output_after_children += "\\end{subsubsection}\n";
-				} */
+				}
 				else if (node.styleName == "Theorem"){
 					output_after_children += "\\end{theorem}\n";
 				}
