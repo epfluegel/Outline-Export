@@ -1,13 +1,15 @@
+console.log("Workflowy content script called!");
 (function(global) {
-
+	console.log("Called content_script.js!");
 	function elementsToArray(e, level) {
+		console.log("element to array func called!")
 		var list = [];
-		var nodeID;
 		e.each(function(){
 			list.push({
 				type: 'node',
-				title: elementToText($(this).children(".name").children(".content")),
-				note: elementToText($(this).children(".notes").children(".content")),
+				//title: elementToText($(this).children(".name").children(".content")),
+				title: elementToText($(this).children(".children")),
+				note: elementToText($(this).children(".content")),
 				url: $(this).children(".name").children("a").attr('href'),
 				level: level,
 				complete: $(this).hasClass("done"),
@@ -32,34 +34,60 @@
 	};
 
 	function elementToText(e){
-		var cloneE = e.clone();
-		cloneE.find("a").each(function(){
-			$(this).replaceWith( $( this ).text() );
-		});
 
-		cloneE.find(".contentTag").each(function(){
-			$(this).replaceWith( $( this ).text() );
-		});
+		try {
+			var cloneE = e.clone();
+			cloneE.find("a").each(function(){
+				$(this).replaceWith( $( this ).text() );
+			});
 
-		// This needs fixing. EP
-		cloneE.html(cloneE.html().replace(/\n+$/g, ''));
-		var elements = cloneE.contents();
-		var list = [];
-		elements.each( function( index ){
-			var text = $(this).text();
-			if(text != '')
-				list.push(new TextExported(text, $(this).hasClass("contentUnderline"), $(this).hasClass("contentBold"), $(this).hasClass("contentItalic")));
-		});
-		return list;
+			cloneE.find(".contentTag").each(function(){
+				$(this).replaceWith( $( this ).text() );
+			});
+
+			cloneE.html(cloneE.html().replace(/\n+$/g, ''));
+			var elements = cloneE.contents();
+			var list = [];
+			elements.each( function( index ){
+				var text = $(this).text();
+				if(text != '')
+					list.push(new TextExported(text, $(this).hasClass("contentUnderline"), $(this).hasClass("contentBold"), $(this).hasClass("contentItalic")));
+			});
+			return list;
+		}
+		catch(error) {
+			console.error(error);
+			return [];
+		}
 	}
 
 	function getContent(callback) {
+		console.log("Get Content Called!");
+		
 		var url = location.href;
 		var title = document.title;
-
-		var nodeList = $('div.addedToSelection');
-		if (nodeList.length==0){
-			nodeList = $('div.selected');
+		console.log("Meta")
+		console.log("url: ",url);
+		console.log("title: ", title);
+		//var nodeList = $('div.addedToSelection');
+		//var nodeList = $('div.is-currentRoot > .u-hidden').remove();
+		var res = $("div").filter(function() {
+			return $(this).css('display') == 'none';
+		}).remove();
+		console.log("Test Div Removal")
+		console.log(res);
+		var nodeList = $('Node-renderedContent');
+		//var nodeList = $("div.addedToSelection");
+		if (nodeList.length===0) {
+			nodeList =  $('div.addedToSelection');
+			console.log("Custom Selection!");
+		}
+		else if (nodeList.length===0){
+			console.log("Selected Main Tree Root!");
+			nodeList = $('div.mainTreeRoot');
+		}
+		else {
+			console.log("Selected Filtered Results!");
 		}
 		var email = document.getElementById("userEmail").innerText;
 		chrome.storage.sync.set({'lastURL' : url}, function() {});
@@ -81,6 +109,7 @@ function injectJS(){
 }
 
 	function main() {
+		console.log("Content Script main()!");
 		injectJS();
 		// show icon in address bar
 		chrome.runtime.sendMessage({
@@ -88,6 +117,8 @@ function injectJS(){
 		}, function() {});
 
 		chrome.extension.onMessage.addListener(function(msg, sender, callback) {
+			console.log("Received a request:")
+			console.log(msg.request)
 			switch (msg.request) {
 				case 'getTopic':
 					getContent(callback);
@@ -95,6 +126,6 @@ function injectJS(){
 			};
 		});
 	}
-
+	
 	main();
 })();

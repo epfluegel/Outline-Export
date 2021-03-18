@@ -65,11 +65,19 @@
 			if(title.lastIndexOf(" ") != -1) title = title.substr(0,title.lastIndexOf(" "))
 			title += ' ...';
 		}
-		var nodeList = $('div.Node.is-selected');
+		
+		let nodeList = $('div.Node.is-selected').clone();
 		if (nodeList.length==0){
-			nodeList = $('div.Node.is-currentRoot');
+			//clone selection so that removing them doesnt affect the original document
+			nodeList = $('div.Node.is-currentRoot').clone();
+			//in the selection find each element with a 'Node' class
 		}
+		nodeList.find('.Node').each(function() { 							
+			//if its hidden then remove it
+			if($(this).css('display') == 'none') {  $(this).remove(); } 
+		}); 
 		console.log(nodeList);
+		
 		var email = $(".main-menu-user-email").text();
 		chrome.storage.sync.set({'lastURL' : url}, function() {});
 		var content = elementsToArray(nodeList, 0);
@@ -97,7 +105,7 @@
 			};
 		});
 	}
-
+	console.log("Dynalist content script called!")
 	main();
 })();
 
