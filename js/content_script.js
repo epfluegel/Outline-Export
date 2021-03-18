@@ -9,7 +9,7 @@ console.log("Workflowy content script called!");
 				type: 'node',
 				//title: elementToText($(this).children(".name").children(".content")),
 				title: elementToText($(this).children(".name").children(".content")),
-				note: elementToText($(this).children("notes").children(".content")),
+				note: elementToText($(this).children(".notes").children(".content")),
 				url: $(this).children(".name").children("a").attr('href'),
 				level: level,
 				complete: $(this).hasClass("done"),
