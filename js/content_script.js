@@ -46,9 +46,7 @@ console.log("Workflowy content script called!");
 			cloneE.html(cloneE.html().replace(/\n+$/g, ''));
 			var elements = cloneE.contents();
 			var list = [];
-			console.log("iterating elements...");
 			elements.each( function( index ){
-				console.log(text);
 				var text = $(this).text();
 				if(text != '')
 					list.push(new TextExported(text, $(this).hasClass("contentUnderline"), $(this).hasClass("contentBold"), $(this).hasClass("contentItalic")));
