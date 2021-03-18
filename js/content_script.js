@@ -8,14 +8,13 @@ console.log("Workflowy content script called!");
 			list.push({
 				type: 'node',
 				//title: elementToText($(this).children(".name").children(".content")),
-				title: elementToText($(this).children(".children")),
-				note: elementToText($(this).children(".content")),
+				title: elementToText($(this).children(".name").children(".content")),
+				note: elementToText($(this).children("notes").children(".content")),
 				url: $(this).children(".name").children("a").attr('href'),
 				level: level,
 				complete: $(this).hasClass("done"),
 				children: []
 			});
-			console.log("Node", list[list.length-1]);
 			$(this).children(".children").children().each(function(){
 				if($(this).text()!= ""){
 					list = list.concat(elementsToArray($(this), level+1));
@@ -34,7 +33,6 @@ console.log("Workflowy content script called!");
 	};
 
 	function elementToText(e){
-
 		try {
 			var cloneE = e.clone();
 			cloneE.find("a").each(function(){
@@ -48,7 +46,9 @@ console.log("Workflowy content script called!");
 			cloneE.html(cloneE.html().replace(/\n+$/g, ''));
 			var elements = cloneE.contents();
 			var list = [];
+			console.log("iterating elements...");
 			elements.each( function( index ){
+				console.log(text);
 				var text = $(this).text();
 				if(text != '')
 					list.push(new TextExported(text, $(this).hasClass("contentUnderline"), $(this).hasClass("contentBold"), $(this).hasClass("contentItalic")));
@@ -56,7 +56,6 @@ console.log("Workflowy content script called!");
 			return list;
 		}
 		catch(error) {
-			console.error(error);
 			return [];
 		}
 	}
@@ -71,23 +70,16 @@ console.log("Workflowy content script called!");
 		console.log("title: ", title);
 		//var nodeList = $('div.addedToSelection');
 		//var nodeList = $('div.is-currentRoot > .u-hidden').remove();
+		/*
 		var res = $("div").filter(function() {
 			return $(this).css('display') == 'none';
 		}).remove();
 		console.log("Test Div Removal")
-		console.log(res);
-		var nodeList = $('Node-renderedContent');
-		//var nodeList = $("div.addedToSelection");
-		if (nodeList.length===0) {
-			nodeList =  $('div.addedToSelection');
-			console.log("Custom Selection!");
-		}
-		else if (nodeList.length===0){
-			console.log("Selected Main Tree Root!");
-			nodeList = $('div.mainTreeRoot');
-		}
-		else {
-			console.log("Selected Filtered Results!");
+		console.log(res);*/
+		var nodeList = $('div.addedToSelection');
+		
+		if (nodeList.length==0){
+			nodeList = $('div.selected');
 		}
 		var email = document.getElementById("userEmail").innerText;
 		chrome.storage.sync.set({'lastURL' : url}, function() {});
