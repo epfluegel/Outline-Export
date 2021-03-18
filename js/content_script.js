@@ -41,6 +41,7 @@
 			$(this).replaceWith( $( this ).text() );
 		});
 
+		// This needs fixing. EP
 		cloneE.html(cloneE.html().replace(/\n+$/g, ''));
 		var elements = cloneE.contents();
 		var list = [];
