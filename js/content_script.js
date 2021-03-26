@@ -42,14 +42,13 @@ console.log("Workflowy content script called!");
 			cloneE.find(".contentTag").each(function(){
 				$(this).replaceWith( $( this ).text() );
 			});
-
 			cloneE.html(cloneE.html().replace(/\n+$/g, ''));
 			var elements = cloneE.contents();
 			var list = [];
 			elements.each( function( index ){
 				var text = $(this).text();
 				if(text != '')
-					list.push(new TextExported(text, $(this).hasClass("contentUnderline"), $(this).hasClass("contentBold"), $(this).hasClass("contentItalic")));
+					list.push(new TextExported(text, $(this).has("u").length ? true : false, $(this).has("b").length ? true : false, $(this).has("i").length ? true : false));
 			});
 			return list;
 		}
