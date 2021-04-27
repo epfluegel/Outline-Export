@@ -35,24 +35,24 @@
 		var resultList = [];
 		var text = e.text().replaceAll("$$", "$").replace(/\n$/, '');
 		var bold = false;
-    var italic=false;
-    var strike=false;
+		var italic=false;
+		var strike=false;
 		var splitText = text.split(/([*]{2}|[_]{2}|[~]{2})/g);
-    splitText.forEach(function(subText,i){
+		splitText.forEach(function(subText,i){
 			switch(subText){
 				case "**" :
-	      	bold=!bold;
+					bold=!bold;
 					break;
-	    	case "__" :
+			case "__" :
 					italic=!italic;
 					break;
-	      case "~~" :
-	      	strike=!strike;
+			case "~~" :
+					strike=!strike;
 					break;
-				default :
-					resultList.push(new TextExported(subText, strike, bold, italic));
-					break;
-	    }
+			default :
+				resultList.push(new TextExported(subText, strike, bold, italic));
+				break;
+			}
 		});
 		return resultList;
 	}

@@ -50,7 +50,7 @@
 							windowPopup2.popup2.main(tabs[0].id);
 							//window.close();
 						}, true);
-						document.getElementById("CLOSE_BUTTON").addEventListener('click', function() { windowPopup2.close(); });
+						//document.getElementById("CLOSE_BUTTON").addEventListener('click', function() { windowPopup2.close(); });
 						break;
 				}
 			});
