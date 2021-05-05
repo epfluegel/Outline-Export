@@ -54,10 +54,8 @@
   
 
   "permissions": [
-    "activeTab",
-    "storage",
-    "tabs",
-    "contextMenus"
+    "storage"
+    
   ],
 
   "page_action": {
